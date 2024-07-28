@@ -3,8 +3,8 @@
   <AdminLayout>
     <div class="py-4 background-image">
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <PieChart v-if="youthprofiles?.length" :data="youthprofiles" label="sex" :colors="['crimson', 'navy']" />
-        <BarChart v-if="youthprofiles?.length" :data="youthprofiles" label="barangay" />
+        <PieChart v-if="youthprofiles?.length" :data="youthprofiles" label="sex" :colors="['navy', 'crimson']" />
+        <BarChart v-if="youthprofiles?.length" :data="youthprofiles" label="barangay"  />
         <BarChart v-if="youthprofiles?.length" :data="youthprofiles" label="purok" />
         <DoughnutChart v-if="youthprofiles?.length" :data="civilStatusData" label="civil_status" :colors="['navy', 'crimson', 'orange', 'forestgreen']" />
         <DoughnutChart v-if="youthprofiles?.length" :data="youthAgeGroupData" label="youth_age_group" :colors="['navy', 'crimson', 'orange', 'forestgreen']" />
@@ -63,7 +63,7 @@ console.log('youthAgeGroupData:', youthAgeGroupData.value); // Add this to see i
 <style scoped>
 .background-image {
   background-image: url('/image/Design (3).png'); /* Replace with your image path */
-  background-size:cover;
+  background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   min-height: 100vh; /* Ensure it covers the full viewport height */

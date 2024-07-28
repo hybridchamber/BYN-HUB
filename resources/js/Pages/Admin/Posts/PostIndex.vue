@@ -41,14 +41,14 @@ onMounted(() => {
                 <template v-if="hasPermission('create post')">
                     <Link
                         :href="route('posts.create')"
-                        class="px-3 py-2 mr-3 font-semibold text-white bg-indigo-500 rounded hover:bg-indigo-700">
+                        class="px-3 py-2 mr-3 font-semibold text-black bg-yellow-500 rounded hover:bg-yellow-700">
                         New Post
                     </Link>
                 </template>
             </div>
             <div class="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 ml-3">
                 <template v-for="post in posts" :key="post.id">
-                    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                    <div class="bg-gray-200 rounded-lg shadow-md overflow-hidden">
                         <img :src="post.cover_photo_url" alt="Cover Photo" class="w-full h-48 object-cover"/>
                         <div class="p-6">
                             <h2 class="text-xl font-bold text-gray-800">{{ post.title }}</h2>

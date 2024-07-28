@@ -45,9 +45,9 @@ const deleteRole = () => {
             </div>
             <div class="mt-6 flex justify-center">
                 <div class="w-full max-w-4xl mx-4">
-                    <Table>
+                    <Table class="rounded-lg overflow-hidden">
                         <template #header>
-                            <TableRow class="bg-red-600 text-white">
+                            <TableRow class="bg-red-700 text-white">
                                 <TableHeaderCell>ID</TableHeaderCell>
                                 <TableHeaderCell>Name</TableHeaderCell>
                                 <TableHeaderCell>Action</TableHeaderCell>

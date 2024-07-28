@@ -94,7 +94,7 @@ watch(() => form.sk_assembly, (newValue) => {
       <div class="flex justify-end">
         <Link
           :href="route('youthprofiles.index')"
-          class="px-3 py-2 mr-3 font-semibold text-white bg-indigo-500 rounded hover:bg-indigo-700">
+          class="px-3 py-2 mr-3 font-semibold text-white bg-red-700 rounded hover:bg-red-900">
           Back
         </Link>
       </div>
@@ -417,7 +417,7 @@ watch(() => form.sk_assembly, (newValue) => {
 
           <div class="flex items-center mt-4">
             <PrimaryButton
-              class="ml-4"
+              class="ml-4 bg-red-700"
               :class="{ 'opacity-25': form.processing }"
               :disabled="form.processing"
             >

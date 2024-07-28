@@ -50,7 +50,7 @@ function submitForm() {
         <div class="flex justify-between">
           <Link
             :href="route('posts.index')"
-            class="px-3 py-2 text-white font-semibold bg-indigo-500 hover:bg-indigo-700 rounded"
+            class="px-3 py-2 text-white font-semibold bg-red-700 hover:bg-red-900 rounded"
           >
             Back
           </Link>
@@ -135,7 +135,7 @@ function submitForm() {
 
             <div class="flex items-center mt-4">
               <PrimaryButton
-                class="ml-4"
+                class="ml-4 bg-red-700"
                 :class="{ 'opacity-25': form.processing }"
                 :disabled="form.processing"
               >

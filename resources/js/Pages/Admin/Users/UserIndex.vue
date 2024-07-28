@@ -39,13 +39,13 @@ const deleteUser = (id) => {
     <AdminLayout>
         <div class="py-4 mx-auto max-w-7xl">
             <div class="flex justify-end">
-                <Link :href="route('users.create')" class="px-3 py-2 mr-3 font-semibold text-black bg-yellow-500 rounded hover:bg-yellow-700">New User</Link>
+                <Link :href="route('users.create')" class="px-3 py-2 mr-3 font-semibold text-black bg-yellow-500 rounded hover:bg-yellow-900">New User</Link>
             </div>
             <div class="mt-6 flex justify-center">
                 <div class="w-full max-w-4xl mx-4">
-                    <Table>
+                    <Table class="rounded-lg overflow-hidden">
                         <template #header>
-                            <TableRow class="bg-red-600 text-white">
+                            <TableRow class="bg-red-700 text-white">
                                 <TableHeaderCell class="text-center">ID</TableHeaderCell>
                                 <TableHeaderCell class="text-center">Name</TableHeaderCell>
                                 <TableHeaderCell class="text-center">Email</TableHeaderCell>

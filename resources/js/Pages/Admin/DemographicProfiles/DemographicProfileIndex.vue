@@ -45,16 +45,16 @@ onMounted(() => {
                 <template v-if="hasPermission('create profile')">
                     <Link
                         :href="route('youthprofiles.create')"
-                        class="px-3 py-2 mr-3 font-semibold text-white bg-indigo-500 rounded hover:bg-indigo-700">
+                        class="px-3 py-2 mr-3 font-semibold text-black bg-yellow-500 rounded hover:bg-yellow-700">
                         New Profile
                     </Link>
                 </template>
             </div>
             <div class="mt-6 flex justify-center">
                 <div class="w-full max-w-5xl mx-4 shadow-lg">
-                    <Table>
+                    <Table  class="rounded-lg overflow-hidden">
                         <template #header>
-                            <TableRow>
+                            <TableRow class="bg-red-700 text-white">
                                 <TableHeaderCell class="text-center">Name</TableHeaderCell>
                                 <TableHeaderCell class="text-center">Email</TableHeaderCell>
                                 <TableHeaderCell class="text-center">Region</TableHeaderCell>

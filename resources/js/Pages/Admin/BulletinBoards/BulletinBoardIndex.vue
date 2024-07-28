@@ -49,7 +49,7 @@ onMounted(() => {
                 <template v-if="hasPermission('create bulletinboard')">
                     <Link
                         :href="route('bulletinboards.create')"
-                        class="px-3 py-2 mr-3 font-semibold text-white bg-yellow-500 rounded hover:bg-yellow-700">
+                        class="px-3 py-2 mr-3 font-semibold text-black bg-yellow-500 rounded hover:bg-yellow-700">
                         New Bulletinboard
                     </Link>
                 </template>

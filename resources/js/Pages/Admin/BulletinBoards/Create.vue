@@ -34,7 +34,7 @@ const updateBbFile = (file) => {
       <div class="flex justify-end">
         <Link
           :href="route('bulletinboards.index')"
-          class="px-3 py-2 mr-3 font-semibold text-white bg-indigo-500 rounded hover:bg-indigo-700"
+          class="px-3 py-2 mr-3 font-semibold text-white bg-red-700 rounded hover:bg-red-900"
           >Back</Link>
       </div>
       <div class="max-w-4xl p-6 mx-auto mt-6 rounded-lg shadow-lg bg-slate-100">
@@ -67,7 +67,7 @@ const updateBbFile = (file) => {
 
           <div class="flex items-center mt-6">
             <PrimaryButton
-              class="ml-4"
+              class="ml-4 bg-red-700"
               :class="{ 'opacity-25': form.processing }"
               :disabled="form.processing"
             >

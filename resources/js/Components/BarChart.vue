@@ -34,7 +34,7 @@
       datasets: [
         {
           label: props.label,
-          backgroundColor: '#42A5F5',
+          backgroundColor: 'orange',
           data: Object.values(dataGroups),
         },
       ],
