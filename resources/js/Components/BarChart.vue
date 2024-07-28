@@ -50,7 +50,7 @@
   <style scoped>
   .chart-container {
     position: relative;
-    height: 400px;
-    width: 100%;
+    height: 190px;
+    width: 70%;
   }
   </style>

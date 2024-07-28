@@ -1,7 +1,7 @@
 <template>
     <div class="flex h-screen bg-gray-200">
     <!-- Sidebar -->
-    <div class="w-60 bg-blue-900 text-white flex flex-col shadow-current rounded-md">
+    <div class="w-60 bg-blue-900 text-white flex flex-col shadow-current">
         <!-- Logo -->
         <div class="p-4 text-lg font-bold flex items-center">
           <img src="http://ts1.mm.bing.net/th?id=OIP.6j8ArTjKPxeZ4RDqh6SZEAHaGs&pid=15.1" alt="Logo" class="h-8 w-auto mr-2 rounded-full">

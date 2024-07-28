@@ -3,15 +3,15 @@
   <AdminLayout>
     <div class="py-4 background-image">
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <PieChart v-if="youthprofiles?.length" :data="youthprofiles" label="sex" :colors="['navy', 'crimson']" />
-        <BarChart v-if="youthprofiles?.length" :data="youthprofiles" label="barangay"  />
+        <PieChart v-if="youthprofiles?.length" :data="youthprofiles" label="sex" :colors="['navy', 'purple']" />
+        <BarChart v-if="youthprofiles?.length" :data="youthprofiles" label="barangay"/>
         <BarChart v-if="youthprofiles?.length" :data="youthprofiles" label="purok" />
         <DoughnutChart v-if="youthprofiles?.length" :data="civilStatusData" label="civil_status" :colors="['navy', 'crimson', 'orange', 'forestgreen']" />
         <DoughnutChart v-if="youthprofiles?.length" :data="youthAgeGroupData" label="youth_age_group" :colors="['navy', 'crimson', 'orange', 'forestgreen']" />
         <DoughnutChart v-if="youthprofiles?.length" :data="educationalBackground" label="educational_background" :colors="['navy', 'crimson', 'orange', 'forestgreen']" />
-        <DoughnutChart v-if="youthprofiles?.length" :data="youthClassification" label="youth_classification" :colors="['navy', 'crimson', 'orange', 'forestgreen']" />
-        <DoughnutChart v-if="youthprofiles?.length" :data="specificNeedsDetail" label="specific_needs_detail" :colors="['navy', 'crimson', 'orange', 'forestgreen']" />
-        <DoughnutChart v-if="youthprofiles?.length" :data="workStatus" label="work_status" :colors="['navy', 'crimson', 'orange', 'forestgreen']" />
+        <DoughnutChart v-if="youthprofiles?.length" :data="youthClassification" label="youth_classification" :colors="['coral', 'cadetblue', 'darkkhaki', 'darkolivegreen']" />
+        <DoughnutChart v-if="youthprofiles?.length" :data="specificNeedsDetail" label="specific_needs_detail" :colors="['coral', 'cadetblue', 'darkkhaki', 'darkolivegreen']" />
+        <DoughnutChart v-if="youthprofiles?.length" :data="workStatus" label="work_status" :colors="['coral', 'cadetblue', 'darkkhaki', 'darkolivegreen']" />
       </div>
     </div>
   </AdminLayout>
