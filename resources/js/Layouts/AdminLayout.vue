@@ -1,7 +1,7 @@
 <template>
     <div class="flex h-screen bg-gray-200">
     <!-- Sidebar -->
-    <div class="w-60 bg-blue-700 text-white flex flex-col shadow-current rounded-md">
+    <div class="w-60 bg-blue-800 text-white flex flex-col shadow-current rounded-md">
         <!-- Logo -->
         <div class="p-4 text-lg font-bold flex items-center">
           <img src="http://ts1.mm.bing.net/th?id=OIP.6j8ArTjKPxeZ4RDqh6SZEAHaGs&pid=15.1" alt="Logo" class="h-8 w-auto mr-2 rounded-full">
@@ -86,7 +86,7 @@
       <!-- Main content -->
       <div class="flex-1 flex flex-col overflow-hidden">
       <!-- Navbar inside main content -->
-      <div class="flex items-center justify-between p-3 bg-blue-700 text-white w-full shadow-current rounded-md">
+      <div class="flex items-center justify-between p-3 bg-blue-800 text-white w-full shadow-current rounded-md">
         <div class="text-lg font-bold">Dashboard</div>
         <button @click="showingNavigationDropdown = !showingNavigationDropdown" class="md:hidden">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">

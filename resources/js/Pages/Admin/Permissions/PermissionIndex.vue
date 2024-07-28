@@ -41,13 +41,13 @@ const deletePermission = () => {
     <AdminLayout>
         <div class="py-4 mx-auto max-w-7xl">
             <div class="flex justify-end">
-                <Link :href="route('permissions.create')" class="px-3 py-2 mr-3 font-semibold text-white bg-indigo-500 rounded hover:bg-indigo-700">New Permission</Link>
+                <Link :href="route('permissions.create')" class="px-3 py-2 mr-3 font-semibold text-white bg-yellow-500 rounded hover:bg-yellow-700">New Permission</Link>
             </div>
             <div class="mt-6 flex justify-center">
                 <div class="w-full max-w-4xl mx-4">
                     <Table>
                         <template #header>
-                            <TableRow>
+                            <TableRow  class="bg-red-600 text-white">
                                 <TableHeaderCell>ID</TableHeaderCell>
                                 <TableHeaderCell>Name</TableHeaderCell>
                                 <TableHeaderCell>Action</TableHeaderCell>
