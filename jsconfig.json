@@ -11,6 +11,6 @@
     "include": [
         "resources/js/**/*.vue",
         "resources/js/**/*.js"
-    ],
+, "resources/js/Pages/Auth/Login.vue"    ],
     "exclude": ["node_modules"]
 }

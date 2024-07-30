@@ -16,7 +16,17 @@ use App\Http\Controllers\BulletinBoardController;
 use App\Http\Controllers\DemographicProfileController;
 
 
+Route::get('/card1', function () {
+    return Inertia::render('Auth/Card1');
+})->name('card1');
 
+Route::get('/card2', function () {
+    return Inertia::render('Auth/Card2');
+})->name('card2');
+
+Route::get('/card3', function () {
+    return Inertia::render('Auth/Card3');
+})->name('card3');
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
