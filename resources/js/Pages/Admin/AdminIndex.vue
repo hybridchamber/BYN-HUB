@@ -66,6 +66,6 @@ console.log('youthAgeGroupData:', youthAgeGroupData.value); // Add this to see i
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  min-height: 100vh; /* Ensure it covers the full viewport height */
+  min-height: 113vh; /* Ensure it covers the full viewport height */
 }
 </style>

@@ -104,4 +104,40 @@ class UserController extends Controller
         $user->delete();
         return to_route('users.index');
     }
+
+
+    public function show(User $user)
+    {
+        return Inertia::render('Users/Show', [
+            'user' => $user,
+        ]);
+    }
+
+
+public function search(Request $request)
+{
+    $query = $request->input('query');
+
+    \Log::info('Search query:', ['query' => $query]);
+
+    // Validate the query
+    if (empty($query)) {
+        return response()->json([]);
+    }
+
+    $results = User::where('name', 'LIKE', "%$query%")
+                    ->orWhere('email', 'LIKE', "%$query%")
+                    ->get(['id', 'name', 'email'])
+                    ->map(function($user) {
+                        // Set all URLs to the same /users URL
+                        $user->url = route('users.index');  // Use the route name 'users.index' or directly '/users'
+                        return $user;
+                    });
+
+    \Log::info('Search results:', ['results' => $results]);
+
+    return response()->json($results);
+}
+
+
 }

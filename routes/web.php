@@ -14,6 +14,7 @@ use App\Http\Controllers\RemoveRoleFromUserController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\BulletinBoardController;
 use App\Http\Controllers\DemographicProfileController;
+use App\Models\User; // Import the User model
 
 
 Route::get('/card1', function () {
@@ -36,6 +37,16 @@ Route::get('/', function () {
         'phpVersion' => PHP_VERSION,
     ]);
 });
+
+
+
+
+
+
+
+// routes/api.php
+Route::get('/search', [UserController::class, 'search']);
+
 
 Route::resource('/admins', AdminController::class);
 Route::resource('/users', UserController::class);
