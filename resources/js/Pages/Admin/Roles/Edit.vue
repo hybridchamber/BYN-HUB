@@ -40,7 +40,13 @@ watch(
     <AdminLayout>
         <div class="py-4 mx-auto max-w-7xl">
             <div class="flex justify-end">
-                <Link :href="route('roles.index')" class="px-3 py-2 mr-3 font-semibold text-white bg-red-700 rounded hover:bg-red-900">Back</Link>
+                <Link :href="route('roles.index')">
+                  <PrimaryButton
+                    class="ml-4"
+                    :class="{ 'opacity-25': form.processing }"
+                    :disabled="form.processing"
+                     > Back </PrimaryButton>
+        </Link>
             </div>
             <div class="max-w-6x1 p-6 mx-6 mt-6 rounded-lg shadow-lg bg-slate-300">
                 <h1 class="text-2xl font-semibold text-indigo-700">Update role</h1>

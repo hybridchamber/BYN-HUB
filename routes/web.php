@@ -15,7 +15,7 @@ use App\Http\Controllers\PostController;
 use App\Http\Controllers\BulletinBoardController;
 use App\Http\Controllers\DemographicProfileController;
 use App\Models\User; // Import the User model
-
+use App\Http\Controllers\AddressValidationController;
 
 Route::get('/card1', function () {
     return Inertia::render('Auth/Card1');
@@ -39,11 +39,6 @@ Route::get('/', function () {
 });
 
 
-
-
-
-
-
 // routes/api.php
 Route::get('/search', [UserController::class, 'search']);
 
@@ -55,6 +50,11 @@ Route::resource('/permissions', PermissionController::class);
 Route::resource('/posts', PostController::class);
 Route::resource('/bulletinboards', BulletinBoardController::class);
 Route::resource('/youthprofiles', DemographicProfileController::class);
+
+Route::get('/api/regions', [AddressValidationController::class, 'getRegions']);
+Route::get('/api/regions/{regionCode}/provinces', [AddressValidationController::class, 'getProvinces']);
+Route::get('/api/provinces/{provinceCode}/municipalities', [AddressValidationController::class, 'getMunicipalities']);
+Route::get('/api/municipalities/{municipalityCode}/barangays', [AddressValidationController::class, 'getBarangays']);
 
 
 Route::delete('/roles/{role}/permissions/{permission}', RevokePermissionFromRoleController::class)

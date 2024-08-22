@@ -38,7 +38,7 @@ const handleCardClick = (routeName) => {
     <GuestLayout>
         <Head title="Log in" />
 
-        <div class="flex items-center justify-center min-h-screen bg-cover bg-center" style="background-image: url('/image/Design (11).png');">
+        <div >
             <div class="w-full max-w-md p-8 bg-white bg-opacity-90 rounded-lg shadow-md">
                 <div v-if="status" class="mb-4 font-medium text-sm text-green-600">
                     {{ status }}

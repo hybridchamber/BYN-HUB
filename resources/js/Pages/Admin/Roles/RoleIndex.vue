@@ -3,6 +3,7 @@ import { Head, Link, useForm } from "@inertiajs/vue3";
 import { ref } from "vue";
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import Table from "@/Components/Table.vue";
+import PrimaryButton from "@/Components/PrimaryButton.vue";
 import TableRow from "@/Components/TableRow.vue";
 import TableHeaderCell from "@/Components/TableHeaderCell.vue";
 import TableDataCell from "@/Components/TableDataCell.vue";
@@ -41,13 +42,20 @@ const deleteRole = () => {
     <AdminLayout>
         <div class="py-4 mx-auto max-w-7xl">
             <div class="flex justify-end">
-                <Link :href="route('roles.create')" class="px-3 py-2 mr-3 font-semibold text-black bg-yellow-500 rounded hover:bg-yellow-700">New Role</Link>
+                <Link :href="route('roles.create')" >
+          <PrimaryButton
+              class="ml-4"
+              :class="{ 'opacity-25': form.processing }"
+              :disabled="form.processing"
+            >
+          New Role
+        </PrimaryButton></Link>
             </div>
             <div class="mt-6 flex justify-center">
                 <div class="w-full max-w-4xl mx-4">
                     <Table class="rounded-lg overflow-hidden">
                         <template #header>
-                            <TableRow class="bg-red-700 text-white">
+                            <TableRow class=" text-white">
                                 <TableHeaderCell>ID</TableHeaderCell>
                                 <TableHeaderCell>Name</TableHeaderCell>
                                 <TableHeaderCell>Action</TableHeaderCell>

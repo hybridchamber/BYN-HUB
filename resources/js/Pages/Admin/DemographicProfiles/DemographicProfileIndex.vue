@@ -1,8 +1,9 @@
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import { Head, Link, useForm } from "@inertiajs/vue3";
 import { usePermission } from "@/composables/permissions";
+import PrimaryButton from "@/Components/PrimaryButton.vue";
 import Modal from "@/Components/Modal.vue";
 import DangerButton from "@/Components/DangerButton.vue";
 import SecondaryButton from "@/Components/SecondaryButton.vue";
@@ -10,6 +11,7 @@ import TableHeaderCell from "@/Components/TableHeaderCell.vue";
 import TableRow from "@/Components/TableRow.vue";
 import TableDataCell from "@/Components/TableDataCell.vue";
 import Table from "@/Components/Table.vue";
+import axios from 'axios';
 
 defineProps(["youthprofiles"]);
 const form = useForm({});
@@ -31,30 +33,103 @@ const deleteProfile = () => {
     });
 };
 
-onMounted(() => {
+onMounted(async () => {
     console.log("Create profile permission:", hasPermission('create profile'));
+    await fetchRegions(); // Fetch regions on mount
+});
+
+const regions = ref([]);
+const provinces = ref([]);
+const municipalities = ref([]);
+const barangays = ref([]);
+
+// Fetch regions
+const fetchRegions = async () => {
+  try {
+    const response = await axios.get('/api/regions');
+    regions.value = response.data;
+  } catch (error) {
+    console.error('Error fetching regions:', error);
+    alert('Failed to load regions');
+  }
+};
+
+// Fetch provinces
+const fetchProvinces = async () => {
+  try {
+    const response = await axios.get(`/api/regions/${form.region}/provinces`);
+    provinces.value = response.data;
+    municipalities.value = [];
+    barangays.value = [];
+  } catch (error) {
+    console.error('Error fetching provinces:', error);
+    alert('Failed to load provinces');
+  }
+};
+
+// Fetch municipalities
+const fetchMunicipalities = async () => {
+  try {
+    const response = await axios.get(`/api/provinces/${form.province}/municipalities`);
+    municipalities.value = response.data;
+    barangays.value = [];
+  } catch (error) {
+    console.error('Error fetching municipalities:', error);
+    alert('Failed to load municipalities');
+  }
+};
+
+// Fetch barangays
+const fetchBarangays = async () => {
+  try {
+    const response = await axios.get(`/api/municipalities/${form.municipality}/barangays`);
+    barangays.value = response.data;
+  } catch (error) {
+    console.error('Error fetching barangays:', error);
+    alert('Failed to load barangays');
+  }
+};
+
+// Watch form.region and form.province for changes
+watch(() => form.region, (newRegion) => {
+  if (newRegion) fetchProvinces();ssss
+});
+
+watch(() => form.province, (newProvince) => {
+  if (newProvince) fetchMunicipalities();
+});
+
+watch(() => form.municipality, (newMunicipality) => {
+  if (newMunicipality) fetchBarangays();
 });
 </script>
+3
+
 
 <template>
     <Head title="Youth Profiles Index" />
 
     <AdminLayout>
-        <div class="py-4 mx-auto max-w-7xl">
+        <div class="py-4 mx-auto max-w-5xl">
             <div class="flex justify-end">
                 <template v-if="hasPermission('create profile')">
                     <Link
                         :href="route('youthprofiles.create')"
-                        class="px-3 py-2 mr-3 font-semibold text-black bg-yellow-500 rounded hover:bg-yellow-700">
-                        New Profile
+                        >
+                        <PrimaryButton
+                            class="ml-4"
+                         :class="{ 'opacity-25': form.processing }"
+                            :disabled="form.processing"
+                            > New Profile 
+                        </PrimaryButton>
                     </Link>
                 </template>
             </div>
             <div class="mt-6 flex justify-center">
-                <div class="w-full max-w-5xl mx-4 shadow-lg">
+                <div class="w-full max-w-4xl mx-4 shadow-lg text-sm">
                     <Table  class="rounded-lg overflow-hidden">
                         <template #header>
-                            <TableRow class="bg-red-700 text-white">
+                            <TableRow class=" text-white">
                                 <TableHeaderCell class="text-center">Name</TableHeaderCell>
                                 <TableHeaderCell class="text-center">Email</TableHeaderCell>
                                 <TableHeaderCell class="text-center">Region</TableHeaderCell>

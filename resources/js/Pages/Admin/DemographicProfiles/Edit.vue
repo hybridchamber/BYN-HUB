@@ -1,18 +1,18 @@
 <script setup>
-import { useForm, Head, Link } from "@inertiajs/vue3";
-import { ref, watch } from 'vue';
-import AdminLayout from "@/Layouts/AdminLayout.vue";
-import PrimaryButton from "@/Components/PrimaryButton.vue";
-import InputLabel from "@/Components/InputLabel.vue";
-import TextInput from "@/Components/TextInput.vue";
-import InputError from "@/Components/InputError.vue";
-import ChooseInput from "@/Components/ChooseInput.vue";
-import DatePicker from "@/Components/DatePicker.vue";
+import { Head, useForm, Link } from '@inertiajs/vue3';
+import { ref, watch, computed, onMounted } from 'vue';
+import AdminLayout from '@/Layouts/AdminLayout.vue';
+import PrimaryButton from '@/Components/PrimaryButton.vue';
+import InputLabel from '@/Components/InputLabel.vue';
+import TextInput from '@/Components/TextInput.vue';
+import InputError from '@/Components/InputError.vue';
+import ChooseInput from '@/Components/ChooseInput.vue';
+import DatePicker from '@/Components/DatePicker.vue';
 import RadioButton from '@/Components/RadioButton.vue';
+import axios from 'axios';
 
 const props = defineProps({
   youthprofile: Object,
-  demographics: Object // Add this line to accept demographics data
 });
 
 const form = useForm({
@@ -45,28 +45,68 @@ const form = useForm({
   vote_last_sk_election: props.youthprofile.demographic.vote_last_sk_election,
 });
 
-const submit = () => {
-  form.put(route("youthprofiles.update", form.id), {
-    onSuccess: () => console.log('Profile updated successfully!'),
-  });
+const handleSubmit = async () => {
+  validateAge();
+  if (!form.errors.age && !form.errors.birthdate) {
+             await form.put(route("youthprofiles.update", form.id), {
+        });
+    }
 };
 
-watch([() => form.age, () => form.civil_status], ([age, civil_status]) => {
-  if (age >= 15 && age <= 17 && civil_status === 'Single') {
+watch(() => form.age, (newAge) => {
+  if (newAge >= 15 && newAge <= 17) {
     form.youth_age_group = 'Child Youth (15-17 Years Old)';
-  } else if (age >= 18 && age <= 24 && civil_status === 'Single') {
+  } else if (newAge >= 18 && newAge <= 24) {
     form.youth_age_group = 'Core Youth (18-24 Years Old)';
-  } else if (age >= 15 && age <= 30 && civil_status === 'Married') {
-    form.youth_age_group = 'Young Adult (15-30 Years Old)';
+  } else if (newAge >= 25 && newAge <= 30) {
+    form.youth_age_group = 'Young Adult (25-30 Years Old)';
   } else {
     form.youth_age_group = '';
   }
 });
 
-// Watcher to show/hide specific_needs_detail based on youth_classification
+// Calculate age from birthdate
+const calculateAge = (birthdate) => {
+  const today = new Date();
+  const birthDate = new Date(birthdate);
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const monthDifference = today.getMonth() - birthDate.getMonth();
+  if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
+  }
+  return age;
+};
+
+// Validate age and birthdate
+const validateAge = () => {
+  if (form.birthdate) {
+    const calculatedAge = calculateAge(form.birthdate);
+    if (calculatedAge !== parseInt(form.age)) {
+      form.errors.age = 'Age and Birthdate do not match.';
+      form.errors.birthdate = 'Age and Birthdate do not match.';
+    } else {
+      delete form.errors.age;
+      delete form.errors.birthdate;
+    }
+  } else {
+    delete form.errors.age;
+    delete form.errors.birthdate;
+  }
+};
+
+// Watchers to validate age and birthdate
+watch(() => form.birthdate, validateAge);
+watch(() => form.age, validateAge);
+
+
 const showSpecificNeedsDetail = ref(false);
 watch(() => form.youth_classification, (newValue) => {
   showSpecificNeedsDetail.value = newValue === 'Youth w/ Specific Needs';
+  if (!showSpecificNeedsDetail.value) {
+    form.specific_needs_detail = 'Youth without Specific Needs';
+  } else {
+    form.specific_needs_detail = '';
+  }
 });
 
 const showSKAssemblyDetails = ref(false);
@@ -84,8 +124,141 @@ watch(() => form.sk_assembly, (newValue) => {
     showSKAssemblyNotAttended.value = false;
   }
 });
-</script>
 
+onMounted(() => {
+  showSpecificNeedsDetail.value = form.youth_classification === 'Youth w/ Specific Needs';
+  if (form.sk_assembly === 'Yes') {
+    showSKAssemblyDetails.value = true;
+    showSKAssemblyNotAttended.value = false;
+  } else if (form.sk_assembly === 'No') {
+    showSKAssemblyDetails.value = false;
+    showSKAssemblyNotAttended.value = true;
+  } else {
+    showSKAssemblyDetails.value = false;
+    showSKAssemblyNotAttended.value = false;
+  }
+});
+
+const regions = ref([]);
+const provinces = ref([]);
+const municipalities = ref([]);
+const barangays = ref([]);
+
+const loadingRegions = ref(false);
+const loadingProvinces = ref(false);
+const loadingMunicipalities = ref(false);
+const loadingBarangays = ref(false);
+
+const regionMap = ref({});
+const provinceMap = ref({});
+const municipalityMap = ref({});
+const barangayMap = ref({});
+
+const fetchRegions = async () => {
+  loadingRegions.value = true;
+  try {
+    const response = await axios.get('/api/regions');
+    regions.value = response.data;
+    response.data.forEach(region => {
+      regionMap.value[region.name] = region.code;
+    });
+  } catch (error) {
+    console.error('Error fetching regions:', error);
+    setTimeout(fetchRegions, 1000);
+  } finally {
+    loadingRegions.value = false;
+  }
+};
+
+const fetchProvinces = async (regionName) => {
+  loadingProvinces.value = true;
+  try {
+    const regionCode = regionMap.value[regionName];
+    const response = await axios.get(`/api/regions/${regionCode}/provinces`);
+    provinces.value = response.data;
+    provinceMap.value = {};
+    response.data.forEach(province => {
+      provinceMap.value[province.name] = province.code;
+    });
+    municipalities.value = [];
+    barangays.value = [];
+  } catch (error) {
+    console.error('Error fetching provinces:', error);
+    setTimeout(() => fetchProvinces(regionName), 1000);
+  } finally {
+    loadingProvinces.value = false;
+  }
+};
+
+const fetchMunicipalities = async (provinceName) => {
+  loadingMunicipalities.value = true;
+  try {
+    const provinceCode = provinceMap.value[provinceName];
+    const response = await axios.get(`/api/provinces/${provinceCode}/municipalities`);
+    municipalities.value = response.data;
+    municipalityMap.value = {};
+    response.data.forEach(municipality => {
+      municipalityMap.value[municipality.name] = municipality.code;
+    });
+    barangays.value = [];
+  } catch (error) {
+    console.error('Error fetching municipalities:', error);
+    setTimeout(() => fetchMunicipalities(provinceName), 1000);
+  } finally {
+    loadingMunicipalities.value = false;
+  }
+};
+
+const fetchBarangays = async (municipalityName) => {
+  loadingBarangays.value = true;
+  try {
+    const municipalityCode = municipalityMap.value[municipalityName];
+    const response = await axios.get(`/api/municipalities/${municipalityCode}/barangays`);
+    barangays.value = response.data;
+    barangayMap.value = {};
+    response.data.forEach(barangay => {
+      barangayMap.value[barangay.name] = barangay.code;
+    });
+  } catch (error) {
+    console.error('Error fetching barangays:', error);
+    setTimeout(() => fetchBarangays(municipalityName), 1000);
+  } finally {
+    loadingBarangays.value = false;
+  }
+};
+
+// Fetch regions on component mount
+onMounted(async () => {
+  await fetchRegions();
+  await fetchProvinces(form.region);
+  await fetchMunicipalities(form.province);
+  await fetchBarangays(form.municipality);
+});
+
+watch(() => form.region, async (newRegion) => {
+  if (newRegion) {
+    form.province = '';
+    form.municipality = '';
+    form.baranggay = '';
+    await fetchProvinces(newRegion);
+  }
+});
+
+watch(() => form.province, async (newProvince) => {
+  if (newProvince) {
+    form.municipality = '';
+    form.baranggay = '';
+    await fetchMunicipalities(newProvince);
+  }
+});
+
+watch(() => form.municipality, async (newMunicipality) => {
+  if (newMunicipality) {
+    form.baranggay = '';
+    await fetchBarangays(newMunicipality);
+  }
+});
+</script>
 <template>
   <Head title="Edit Youth Profile" />
 
@@ -93,9 +266,13 @@ watch(() => form.sk_assembly, (newValue) => {
     <div class="max-w-7xl mx-auto py-4">
       <div class="flex justify-end">
         <Link
-          :href="route('youthprofiles.index')"
-          class="px-3 py-2 mr-3 font-semibold text-white bg-red-700 rounded hover:bg-red-900">
-          Back
+          :href="route('youthprofiles.index')">
+          <PrimaryButton
+               class="ml-4"
+              :class="{ 'opacity-25': form.processing }"
+              :disabled="form.processing"
+              > Back 
+          </PrimaryButton>
         </Link>
       </div>
       <div class="mt-6 max-w-6xl mx-auto bg-slate-100 shadow-lg rounded-lg p-6">

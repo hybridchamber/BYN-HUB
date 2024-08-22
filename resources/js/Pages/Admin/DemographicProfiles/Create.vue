@@ -9,6 +9,7 @@ import InputError from '@/Components/InputError.vue';
 import ChooseInput from '@/Components/ChooseInput.vue';
 import DatePicker from '@/Components/DatePicker.vue';
 import RadioButton from '@/Components/RadioButton.vue';
+import axios from 'axios';
 
 const form = useForm({
   // Youth Profile fields
@@ -42,23 +43,27 @@ const form = useForm({
   vote_last_sk_election: '',
 });
 
-// Watchers to automatically set youth_age_group
-watch([() => form.age, () => form.civil_status], ([age, civil_status]) => {
-  if (age >= 15 && age <= 17 && civil_status === 'Single') {
+watch(() => form.age, (newAge) => {
+  if (newAge >= 15 && newAge <= 17) {
     form.youth_age_group = 'Child Youth (15-17 Years Old)';
-  } else if (age >= 18 && age <= 24 && civil_status === 'Single') {
+  } else if (newAge >= 18 && newAge <= 24) {
     form.youth_age_group = 'Core Youth (18-24 Years Old)';
-  } else if (age >= 15 && age <= 30 && civil_status === 'Married') {
-    form.youth_age_group = 'Young Adult (15-30 Years Old)';
+  } else if (newAge >= 25 && newAge <= 30) {
+    form.youth_age_group = 'Young Adult (25-30 Years Old)';
   } else {
     form.youth_age_group = '';
   }
 });
 
-// Watcher to show/hide specific_needs_detail based on youth_classification
+
 const showSpecificNeedsDetail = ref(false);
 watch(() => form.youth_classification, (newValue) => {
-  showSpecificNeedsDetail.value = newValue === 'Youth w/ Specific Needs';
+  if (newValue === 'Youth w/ Specific Needs') {
+    showSpecificNeedsDetail.value = true;
+  } else {
+    showSpecificNeedsDetail.value = false;
+    form.specific_needs_detail = 'Youth without Specific Needs';
+  }
 });
 
 const showSKAssemblyDetails = ref(false);
@@ -76,6 +81,139 @@ watch(() => form.sk_assembly, (newValue) => {
     showSKAssemblyNotAttended.value = false;
   }
 });
+
+const regions = ref([]);
+const provinces = ref([]);
+const municipalities = ref([]);
+const barangays = ref([]);
+
+const loadingRegions = ref(false);
+const loadingProvinces = ref(false);
+const loadingMunicipalities = ref(false);
+const loadingBarangays = ref(false);
+
+const regionMap = ref({});
+const provinceMap = ref({});
+const municipalityMap = ref({});
+const barangayMap = ref({});
+
+const fetchRegions = async () => {
+  loadingRegions.value = true;
+  try {
+    const response = await axios.get('/api/regions');
+    regions.value = response.data;
+    response.data.forEach(region => {
+      regionMap.value[region.code] = region.name;
+    });
+  } catch (error) {
+    console.error('Error fetching regions:', error);
+    setTimeout(fetchRegions, 1000);
+  } finally {
+    loadingRegions.value = false;
+  }
+};
+
+const fetchProvinces = async () => {
+  loadingProvinces.value = true;
+  try {
+    const response = await axios.get(`/api/regions/${form.region}/provinces`);
+    provinces.value = response.data;
+    response.data.forEach(province => {
+      provinceMap.value[province.code] = province.name;
+    });
+    municipalities.value = [];
+    barangays.value = [];
+  } catch (error) {
+    console.error('Error fetching provinces:', error);
+    setTimeout(fetchProvinces, 1000);
+  } finally {
+    loadingProvinces.value = false;
+  }
+};
+
+const fetchMunicipalities = async () => {
+  loadingMunicipalities.value = true;
+  try {
+    const response = await axios.get(`/api/provinces/${form.province}/municipalities`);
+    municipalities.value = response.data;
+    response.data.forEach(municipality => {
+      municipalityMap.value[municipality.code] = municipality.name;
+    });
+    barangays.value = [];
+  } catch (error) {
+    console.error('Error fetching municipalities:', error);
+    setTimeout(fetchMunicipalities, 1000);
+  } finally {
+    loadingMunicipalities.value = false;
+  }
+};
+
+const fetchBarangays = async () => {
+  loadingBarangays.value = true;
+  try {
+    const response = await axios.get(`/api/municipalities/${form.municipality}/barangays`);
+    barangays.value = response.data;
+    response.data.forEach(barangay => {
+      barangayMap.value[barangay.code] = barangay.name;
+    });
+  } catch (error) {
+    console.error('Error fetching barangays:', error);
+    setTimeout(fetchBarangays, 1000);
+  } finally {
+    loadingBarangays.value = false;
+  }
+};
+
+const updateFormWithNames = () => {
+  form.region = regionMap.value[form.region];
+  form.province = provinceMap.value[form.province];
+  form.municipality = municipalityMap.value[form.municipality];
+  form.baranggay = barangayMap.value[form.baranggay];
+};
+
+fetchRegions();
+
+// Calculate age from birthdate
+const calculateAge = (birthdate) => {
+  const today = new Date();
+  const birthDate = new Date(birthdate);
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const monthDifference = today.getMonth() - birthDate.getMonth();
+  if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
+  }
+  return age;
+};
+
+// Validate age and birthdate
+const validateAge = () => {
+  if (form.birthdate) {
+    const calculatedAge = calculateAge(form.birthdate);
+    if (calculatedAge !== parseInt(form.age)) {
+      form.errors.age = 'Age and Birthdate do not match.';
+      form.errors.birthdate = 'Age and Birthdate do not match.';
+    } else {
+      delete form.errors.age;
+      delete form.errors.birthdate;
+    }
+  } else {
+    delete form.errors.age;
+    delete form.errors.birthdate;
+  }
+};
+
+// Watchers to validate age and birthdate
+watch(() => form.birthdate, validateAge);
+watch(() => form.age, validateAge);
+
+const handleSubmit = async () => {
+  updateFormWithNames();
+  validateAge();
+  if (!form.errors.age && !form.errors.birthdate) {
+    await form.post(route('youthprofiles.store'));
+  }
+};
+
 </script>
 
 <template>
@@ -84,239 +222,268 @@ watch(() => form.sk_assembly, (newValue) => {
   <AdminLayout>
     <div class="max-w-7xl mx-auto py-4">
       <div class="flex justify-end">
-        <Link
-          :href="route('youthprofiles.index')"
-          class="px-3 py-2 mr-3 font-semibold text-white bg-red-700 rounded hover:bg-red-900">
-          
+        <Link :href="route('youthprofiles.index')">
+          <PrimaryButton
+              class="ml-4"
+              :class="{ 'opacity-25': form.processing }"
+              :disabled="form.processing"
+            >
           Back
+        </PrimaryButton>
         </Link>
       </div>
       <div class="mt-6 max-w-6xl mx-auto bg-slate-100 shadow-lg rounded-lg p-6">
-        <h1 class="text-2xl font-semibold text-indigo-700">Create Youth Profile</h1>
-        <form @submit.prevent="form.post(route('youthprofiles.store'))">
-          <!-- Youth Profile Fields -->
-          <div class="mt-4">
-            <InputLabel for="first_name" value="First Name" />
-            <TextInput
-              id="first_name"
-              type="text"
-              class="mt-1 block w-full"
-              v-model="form.first_name"
-              autofocus
-              autocomplete="first_name"
-            />
-            <InputError class="mt-2" :message="form.errors.first_name" />
-          </div>
+        <h1 class="text-2xl font-semibold text-blue-900">Create Youth Profile</h1>
+        <form @submit.prevent="handleSubmit()">
+          <!-- Grid Layout -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
 
-          <div class="mt-4">
-            <InputLabel for="middle_name" value="Middle Name" />
-            <TextInput
-              id="middle_name"
-              type="text"
-              class="mt-1 block w-full"
-              v-model="form.middle_name"
-            />
-            <InputError class="mt-2" :message="form.errors.middle_name" />
-          </div>
+            <!-- Youth Profile Fields -->
+            <div>
+              <InputLabel for="first_name" value="First Name" />
+              <TextInput
+                id="first_name"
+                type="text"
+                class="mt-1 block w-full"
+                v-model="form.first_name"
+                autofocus
+                autocomplete="first_name"
+              />
+              <InputError class="mt-2" :message="form.errors.first_name" />
+            </div>
 
-          <div class="mt-4">
-            <InputLabel for="last_name" value="Last Name" />
-            <TextInput
-              id="last_name"
-              type="text"
-              class="mt-1 block w-full"
-              v-model="form.last_name"
-            />
-            <InputError class="mt-2" :message="form.errors.last_name" />
-          </div>
+            <div>
+              <InputLabel for="middle_name" value="Middle Name" />
+              <TextInput
+                id="middle_name"
+                type="text"
+                class="mt-1 block w-full"
+                v-model="form.middle_name"
+              />
+              <InputError class="mt-2" :message="form.errors.middle_name" />
+            </div>
 
-          <div class="mt-4">
-            <InputLabel for="suffix" value="Suffix" />
-            <TextInput
-              id="suffix"
-              type="text"
-              class="mt-1 block w-full"
-              v-model="form.suffix"
-            />
-            <InputError class="mt-2" :message="form.errors.suffix" />
-          </div>
+            <div>
+              <InputLabel for="last_name" value="Last Name" />
+              <TextInput
+                id="last_name"
+                type="text"
+                class="mt-1 block w-full"
+                v-model="form.last_name"
+              />
+              <InputError class="mt-2" :message="form.errors.last_name" />
+            </div>
 
-          <div class="mt-4">
-            <InputLabel for="region" value="Region" />
-            <TextInput
-              id="region"
-              type="text"
-              class="mt-1 block w-full"
-              v-model="form.region"
-            />
-            <InputError class="mt-2" :message="form.errors.region" />
-          </div>
+            <div>
+              <InputLabel for="suffix" value="Suffix" />
+              <TextInput
+                id="suffix"
+                type="text"
+                class="mt-1 block w-full"
+                v-model="form.suffix"
+              />
+              <InputError class="mt-2" :message="form.errors.suffix" />
+            </div>
 
-          <div class="mt-4">
-            <InputLabel for="province" value="Province" />
-            <TextInput
-              id="province"
-              type="text"
-              class="mt1 block w-full"
-              v-model="form.province"
-            />
-            <InputError class="mt-2" :message="form.errors.province" />
-          </div>
+            <div>
+              <InputLabel for="region" value="Region" />
+              <select
+                id="region"
+                class="mt-1 block w-full"
+                v-model="form.region"
+               @change="loadingProvinces = true; fetchProvinces()"
+               :disabled="loadingRegions"
+              >
+                <option value="" disabled>Select Region</option>
+                <option v-for="region in regions" :key="region.code" :value="region.code">
+                  {{ region.name }}
+                </option>
+              </select>
+              <InputError class="mt-2" :message="form.errors.region" />
+            </div>
 
-          <div class="mt-4">
-            <InputLabel for="municipality" value="Municipality" />
-            <TextInput
-              id="municipality"
-              type="text"
-              class="mt-1 block w-full"
-              v-model="form.municipality"
-            />
-            <InputError class="mt-2" :message="form.errors.municipality" />
-          </div>
+            <div>
+              <InputLabel for="province" value="Province" />
+              <select
+                id="province"
+                class="mt-1 block w-full"
+                v-model="form.province"
+                @change="loadingMunicipalities = true; fetchMunicipalities()"
+               :disabled="loadingProvinces"
+              >
+                <option value="" disabled>Select Province</option>
+                <option v-for="province in provinces" :key="province.code" :value="province.code">
+                  {{ province.name }}
+                </option>
+              </select>
+              <InputError class="mt-2" :message="form.errors.province" />
+            </div>
 
-          <div class="mt-4">
-            <InputLabel for="baranggay" value="Baranggay" />
-            <TextInput
-              id="baranggay"
-              type="text"
-              class="mt-1 block w-full"
-              v-model="form.baranggay"
-            />
-            <InputError class="mt-2" :message="form.errors.baranggay" />
-          </div>
+            <div>
+              <InputLabel for="municipality" value="Municipality" />
+              <select
+                id="municipality"
+                class="mt-1 block w-full"
+                v-model="form.municipality"
+                @change="loadingBarangays = true; fetchBarangays()"
+                :disabled="loadingMunicipalities"
+              >
+                <option value="" disabled>Select Municipality</option>
+                <option v-for="municipality in municipalities" :key="municipality.code" :value="municipality.code">
+                  {{ municipality.name }}
+                </option>
+              </select>
+              <InputError class="mt-2" :message="form.errors.municipality" />
+            </div>
 
-          <div class="mt-4">
-            <InputLabel for="purok" value="Purok" />
-            <TextInput
-              id="purok"
-              type="text"
-              class="mt-1 block w-full"
-              v-model="form.purok"
-            />
-            <InputError class="mt-2" :message="form.errors.purok" />
-          </div>
+            <div>
+              <InputLabel for="baranggay" value="Barangay" />
+              <select
+                  id="baranggay"
+                  class="mt-1 block w-full"
+                  v-model="form.baranggay"
+                  :disabled="loadingBarangays"
+              >
+                <option value="" disabled>Select Barangay</option>
+                <option v-for="barangay in barangays" :key="barangay.code" :value="barangay.code">
+                  {{ barangay.name }}
+                </option>
+              </select>
+              <InputError class="mt-2" :message="form.errors.baranggay" />
+            </div>
 
-          <div class="mt-4">
-            <InputLabel for="sex" value="Sex" />
-            <RadioButton
-              id="sex"
-              :options="['Male', 'Female']"
-              v-model="form.sex"
-            />
-            <InputError class="mt-2" :message="form.errors.sex" />
-          </div>
+            <div>
+              <InputLabel for="purok" value="Purok" />
+              <TextInput
+                id="purok"
+                type="text"
+                class="mt-1 block w-full"
+                v-model="form.purok"
+              />
+              <InputError class="mt-2" :message="form.errors.purok" />
+            </div>
 
-          <div class="mt-4">
-            <InputLabel for="age" value="Age" />
-            <TextInput
-              id="age"
-              class="mt-1 block w-full"
-              v-model="form.age"
-            />
-            <InputError class="mt-2" :message="form.errors.age" />
-          </div>
+            <div>
+              <InputLabel for="sex" value="Sex" />
+              <RadioButton
+                id="sex"
+                :options="['Male', 'Female']"
+                v-model="form.sex"
+              />
+              <InputError class="mt-2" :message="form.errors.sex" />
+            </div>
 
-          <div class="mt-4">
-            <InputLabel for="birthdate" value="Birthdate" />
-            <DatePicker
-              id="birthdate"
-              class="mt-1 block w-full"
-              v-model="form.birthdate"
-            />
-            <InputError class="mt-2" :message="form.errors.birthdate" />
-          </div>
+            <div>
+              <InputLabel for="age" value="Age" />
+              <TextInput
+                id="age"
+                class="mt-1 block w-full"
+                v-model="form.age"
+              />
+              <InputError class="mt-2" :message="form.errors.age" />
+            </div>
 
-          <div class="mt-4">
-            <InputLabel for="email" value="Email" />
-            <TextInput
-              id="email"
-              type="email"
-              class="mt-1 block w-full"
-              v-model="form.email"
-            />
-            <InputError class="mt-2" :message="form.errors.email" />
-          </div>
+            <div>
+              <InputLabel for="birthdate" value="Birthdate" />
+              <DatePicker
+                id="birthdate"
+                class="mt-1 block w-full"
+                v-model="form.birthdate"
+              />
+              <InputError class="mt-2" :message="form.errors.birthdate" />
+            </div>
 
-          <div class="mt-4">
-            <InputLabel for="contact_no" value="Contact Number" />
-            <TextInput
-              id="contact_no"
-              type="text"
-              class="mt-1 block w-full"
-              v-model="form.contact_no"
-            />
-            <InputError class="mt-2" :message="form.errors.contact_no" />
-          </div>
+            <div>
+              <InputLabel for="email" value="Email" />
+              <TextInput
+                id="email"
+                type="email"
+                class="mt-1 block w-full"
+                v-model="form.email"
+              />
+              <InputError class="mt-2" :message="form.errors.email" />
+            </div>
 
-          <!-- Demographic Fields -->
-          <div class="mt-4">
-            <InputLabel for="civil_status" value="Civil Status" />
-            <ChooseInput
-              id="civil_status"
-              name="civil_status"
-              v-model="form.civil_status"
-              :options="[
-                'Single',
-                'Married',
-                'Divorced',
-                'Widowed',
-                'Separated'
-              ]"
-            />
-            <InputError class="mt-2" :message="form.errors.civil_status" />
-          </div>
+            <div>
+              <InputLabel for="contact_no" value="Contact Number" />
+              <TextInput
+                id="contact_no"
+                type="text"
+                class="mt-1 block w-full"
+                v-model="form.contact_no"
+              />
+              <InputError class="mt-2" :message="form.errors.contact_no" />
+            </div>
 
-          <div class="mt-4">
-            <InputLabel for="youth_age_group" value="Youth Age Group" />
-            <TextInput
-              id="youth_age_group"
-              type="text"
-              class="mt-1 block w-full"
-              v-model="form.youth_age_group"
-              readonly
-            />
-            <InputError class="mt-2" :message="form.errors.youth_age_group" />
-          </div>
+            <!-- Demographic Fields -->
+            <div>
+              <InputLabel for="civil_status" value="Civil Status" />
+              <ChooseInput
+                id="civil_status"
+                name="civil_status"
+                v-model="form.civil_status"
+                :options="[
+                  'Single',
+                  'Married',
+                  'Divorced',
+                  'Widowed',
+                  'Separated'
+                ]"
+              />
+              <InputError class="mt-2" :message="form.errors.civil_status" />
+            </div>
 
-          <div class="mt-4">
-            <InputLabel for="educational_background" value="Educational Background" />
-            <ChooseInput
-              id="educational_background"
-              name="educational_background"
-              v-model="form.educational_background"
-              :options="[
-                'Elementary Level',
-                'Elementary Graduate',
-                'High School Level',
-                'High School Graduate',
-                'College Level',
-                'College Graduate',
-                'Master\'s Level',
-                'Master\'s Graduate',
-                'Doctorate Level',
-                'Doctorate Graduate'
-              ]"
-            />
-            <InputError class="mt-2" :message="form.errors.educational_background" />
-          </div>
+            <div>
+              <InputLabel for="youth_age_group" value="Youth Age Group" />
+              <TextInput
+                id="youth_age_group"
+                type="text"
+                class="mt-1 block w-full"
+                v-model="form.youth_age_group"
+                readonly
+              />
+              <InputError class="mt-2" :message="form.errors.youth_age_group" />
+            </div>
 
-          <div class="mt-4">
-            <InputLabel for="youth_classification" value="Youth Classification" />
-            <ChooseInput
-              id="youth_classification"
-              name="youth_classification"
-              v-model="form.youth_classification"
-              :options="[
-                'In School Youth',
-                'Out of School Youth',
-                'Working Youth',
-                'Youth w/ Specific Needs'
-              ]"
-            />
-            <InputError class="mt-2" :message="form.errors.youth_classification" />
-          </div>
+            <div>
+              <InputLabel for="educational_background" value="Educational Background" />
+              <ChooseInput
+                id="educational_background"
+                name="educational_background"
+                v-model="form.educational_background"
+                :options="[
+                  'Elementary Level',
+                  'Elementary Graduate',
+                  'High School Level',
+                  'High School Graduate',
+                  'College Level',
+                  'College Graduate',
+                  'Master\'s Level',
+                  'Master\'s Graduate',
+                  'Doctorate Level',
+                  'Doctorate Graduate'
+                ]"
+              />
+              <InputError class="mt-2" :message="form.errors.educational_background" />
+            </div>
 
-          <div v-if="showSpecificNeedsDetail" class="mt-4">
+            <div>
+              <InputLabel for="youth_classification" value="Youth Classification" />
+              <ChooseInput
+                id="youth_classification"
+                name="youth_classification"
+                v-model="form.youth_classification"
+                :options="[
+                  'In School Youth',
+                  'Out of School Youth',
+                  'Working Youth',
+                  'Youth w/ Specific Needs'
+                ]"
+              />
+              <InputError class="mt-2" :message="form.errors.youth_classification" />
+            </div>
+
+            <div v-if="showSpecificNeedsDetail" class="mt-4">
             <InputLabel for="specific_needs_detail" value="Specific Needs Detail" />
             <ChooseInput
               id="specific_needs_detail"
@@ -347,7 +514,7 @@ watch(() => form.sk_assembly, (newValue) => {
             />
             <InputError class="mt-2" :message="form.errors.work_status" />
           </div>
-
+        </div>
           <div class="mt-4">
             <InputLabel for="registered_sk_voter" value="Registered SK Voter" />
             <RadioButton
@@ -407,10 +574,14 @@ watch(() => form.sk_assembly, (newValue) => {
             />
             <InputError class="mt-2" :message="form.errors.sk_assembly_not_attended" />
           </div>
+          
 
+          
+
+          <!-- Submit Button -->
           <div class="flex items-center mt-4">
             <PrimaryButton
-              class="ml-4 bg-red-700" 
+              class="ml-4"
               :class="{ 'opacity-25': form.processing }"
               :disabled="form.processing"
             >

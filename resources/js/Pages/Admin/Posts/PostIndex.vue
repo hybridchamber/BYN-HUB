@@ -2,6 +2,7 @@
 import { ref, onMounted } from "vue";
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 import { Head, Link, useForm } from "@inertiajs/vue3";
+import  PrimaryButton  from "@/Components/PrimaryButton.vue";
 import { usePermission } from "@/composables/permissions";
 import Modal from "@/Components/Modal.vue";
 import DangerButton from "@/Components/DangerButton.vue";
@@ -41,8 +42,11 @@ onMounted(() => {
                 <template v-if="hasPermission('create post')">
                     <Link
                         :href="route('posts.create')"
-                        class="px-3 py-2 mr-3 font-semibold text-black bg-yellow-500 rounded hover:bg-yellow-700">
-                        New Post
+                        ><PrimaryButton
+                    class="ml-4"
+                    :class="{ 'opacity-25': form.processing }"
+                    :disabled="form.processing"
+                     > New Post </PrimaryButton>
                     </Link>
                 </template>
             </div>

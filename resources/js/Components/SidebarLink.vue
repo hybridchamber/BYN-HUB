@@ -25,7 +25,7 @@
   });
 
   const classes = computed(() => ({
-    'block px-5 py-3 text-black hover:bg-indigo-500 text-lg rounded-lg flex items-center': true,
-    'bg-indigo-200 text-black text-xl rounded-lg': props.active,
+    'block px-5 py-3 text-whiye hover:bg-green-700 text-lg rounded-lg flex items-center': true,
+    'bg-green-600 text-white text-xl rounded-lg': props.active,
   }));
   </script>

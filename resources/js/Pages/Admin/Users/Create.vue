@@ -33,7 +33,15 @@ const submit = () => {
     <AdminLayout>
         <div class="py-4 mx-auto max-w-7xl">
             <div class="flex justify-end">
-                <Link :href="route('users.index')" class="px-3 py-2 mr-3 font-semibold text-white bg-red-700 rounded hover:bg-red-900">Back</Link>
+                <Link :href="route('users.index')">
+          <PrimaryButton
+              class="ml-4"
+              :class="{ 'opacity-25': form.processing }"
+              :disabled="form.processing"
+            >
+          Back
+        </PrimaryButton>
+    </Link>
             </div>
             <form @submit.prevent="submit" class="max-w-md mx-auto bg-white p-6 rounded-lg shadow-md">
                 <h1 class="text-2xl font-bold text-center mb-4">Create New User</h1>
@@ -105,7 +113,7 @@ const submit = () => {
                     :options="roles"
                     :multiple="true"
                     :close-on-select="true"
-                    placeholder="Pick some"
+                    placeholder="Select"
                     label="name"
                     track-by="id"
                     />
